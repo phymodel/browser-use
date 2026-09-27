@@ -1,3 +1,8 @@
+---
+name: browser-harness
+description: "Agent browser harness with its own bundled Chromium window (aria-snapshot perception, [ref=eN] driven actions, local daemon + browserctl CLI). Use for web browsing, page interaction, form filling, scraping and screenshot verification without touching the device browser."
+---
+
 # Browser Harness v0.1
 
 一个**自带浏览器窗口**的智能体浏览器 harness：内置 Chromium（独立 profile，不碰设备浏览器、不需要任何系统权限、不需要装扩展），

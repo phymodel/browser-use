@@ -36,13 +36,23 @@ browserctl start https://example.com
 | `text [target]` | `--max-chars=N` | 可见正文（默认 `body`）；Canvas/图多的页面用它兜底 |
 | `html [target]` | `--max-chars=N` | `innerHTML` |
 | `screenshot [target]` | `--full`、`--out=FILE` | 落盘 PNG，返回路径/尺寸/字节数。**模型看不到像素** |
-| `eval "<js>"` | | 三种写法都支持：表达式 `document.title`、多语句 `const a=1; a+1`、箭头函数 `() => location.href` |
+| `eval "<js>"` | | 三种写法都支持：表达式 `document.title`、多语句 `const a=1; a+1`、箭头函数 `() => location.href`。人类可读模式会打印返回值（对象按 JSON 缩进展开），`--json` 下是 `value` 字段 |
 
 ```bash
 browserctl find 登录
 # 2 match(es) for "登录":
 #   [e18] link "登录"
 #   [ref-less) button "登录/注册"
+```
+
+```bash
+browserctl eval "() => ({title: document.title, canvases: document.querySelectorAll('canvas').length})"
+# ✓ eval (2ms)
+#   {
+#     "title": "PhyModel 网页版 · 3D 物理场景编辑器",
+#     "canvases": 1
+#   }
+#   → http://localhost:5173/app.html "…" tab 1/1
 ```
 
 ## 动作（target = `e12` 这种 ref，或任何 Playwright 选择器 `#id` / `.cls` / `text=…` / `xpath=…`）
@@ -72,7 +82,19 @@ browserctl click e8 --json
 ## 标签页
 
 `tabs`（1 基序号，`*` 标记当前）、`newtab [url]`、`switchtab <n>`、`closetab <n>`（默认关最后一个；
-关到 0 个会自动开一个空白页）。
+关到 0 个会自动开一个空白页）。四个命令都会打印当前**真实活跃**标签页的页面状态，`newtab` /
+`switchtab` / `closetab` 还会附上完整标签列表（JSON 里是 `tabList`；`tabs` 字段始终是标签**数量**）。
+
+```bash
+browserctl newtab http://localhost:5173/
+# ✓ newtab
+#   → http://localhost:5173/ "…" tab 2/2
+#     1. … http://localhost:5173/app.html
+#   * 2. … http://localhost:5173/
+```
+
+活跃标签页由 `focus` 事件 + 标签命令维护；在窗口里**手动**点标签页也会被识别
+（后台标签页的 `document.visibilityState` 是 `hidden`，据此校正）。
 
 ## 遥测
 

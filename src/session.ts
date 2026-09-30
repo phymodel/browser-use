@@ -165,6 +165,8 @@ export class BrowserSession {
   closing = false;
   lastError: string | null = null;
   private chromium: any = null;
+  /** The page actions are sent to. Kept in sync by focus events + tab commands. */
+  private active: any = null;
 
   constructor(opts: SessionOptions = {}) {
     this.headless = opts.headless ?? flag('BH_HEADLESS');
@@ -241,6 +243,15 @@ export class BrowserSession {
 
   private wirePage(page: any): void {
     const indexOf = () => this.context?.pages().indexOf(page) ?? -1;
+
+    // Focus/close keep the active-page pointer honest even when the user
+    // switches tabs by hand inside the built-in window.
+    page.on('focus', () => {
+      this.active = page;
+    });
+    page.on('close', () => {
+      if (this.active === page) this.active = null;
+    });
 
     page.on('console', (msg: any) => {
       this.push(this.logs, {
@@ -328,8 +339,36 @@ export class BrowserSession {
   async activePage(): Promise<any> {
     await this.ensureAlive();
     const pages = this.context.pages().filter((p: any) => !p.isClosed());
-    if (!pages.length) return this.context.newPage();
-    return pages[pages.length - 1];
+    if (!pages.length) {
+      const created = await this.context.newPage();
+      this.active = created;
+      return created;
+    }
+    if (this.active && pages.includes(this.active)) return (await this.reconcileIfHidden(pages)) ?? this.active;
+    this.active = pages[pages.length - 1];
+    return this.active;
+  }
+
+  /**
+   * The tracked page goes stale when the user picks a tab by hand in the window.
+   * Chrome reports `document.visibilityState === 'hidden'` for background tabs of
+   * the same window, so a hidden tracked page means the real one is elsewhere.
+   * Costs one evaluate while a single tab is open, a couple more only on mismatch.
+   */
+  private async reconcileIfHidden(pages: any[]): Promise<any | null> {
+    const tracked = this.active;
+    if (!tracked || pages.length < 2) return null;
+    const state = await tracked.evaluate(() => document.visibilityState).catch(() => null);
+    if (state !== 'hidden') return null;
+    for (const p of pages) {
+      if (p === tracked) continue;
+      const visible = await p.evaluate(() => document.visibilityState).catch(() => null);
+      if (visible === 'visible') {
+        this.active = p;
+        return p;
+      }
+    }
+    return null;
   }
 
   /**
@@ -435,7 +474,7 @@ export class BrowserSession {
 
   async cmdStatus(): Promise<Record<string, unknown>> {
     const pages = this.context?.pages() ?? [];
-    const active = pages.length ? pages[pages.length - 1] : null;
+    const active = pages.length ? await this.activePage() : null;
     return {
       running: Boolean(this.context),
       pid: process.pid,
@@ -831,9 +870,16 @@ export class BrowserSession {
     const page = await this.activePage();
     const raw = String(a.code ?? '').trim();
     if (!raw) fail('eval needs code', 'example: browserctl eval "document.title"');
+    const t0 = Date.now();
     const value = await this.guard(() => page.evaluate(buildEvalSource(raw)));
     this.actionCount++;
-    return { action: 'eval', value: jsonSafe(value), undefined: value === undefined, ...(await this.pageState(page)) };
+    return {
+      action: 'eval',
+      value: jsonSafe(value),
+      undefined: value === undefined,
+      ms: Date.now() - t0,
+      ...(await this.pageState(page)),
+    };
   }
 
   // -------------------------------------------------------------- window/tabs
@@ -858,6 +904,7 @@ export class BrowserSession {
   }
 
   async cmdTabs(a: any): Promise<Record<string, unknown>> {
+    const active = await this.activePage();
     const pages = this.context?.pages() ?? [];
     const tabs = [];
     for (const [i, p] of pages.entries()) {
@@ -865,7 +912,7 @@ export class BrowserSession {
         index: i + 1,
         url: p.url(),
         title: await p.title().catch(() => null),
-        active: i === pages.length - 1,
+        active: p === active,
         closed: p.isClosed(),
       });
     }
@@ -875,9 +922,13 @@ export class BrowserSession {
   async cmdNewtab(a: any): Promise<Record<string, unknown>> {
     const page = await this.context.newPage();
     this.wirePage(page);
+    this.active = page;
     if (a.url) await this.guard(() => page.goto(this.normalizeUrl(a.url), { timeout: NAV_TIMEOUT, waitUntil: 'domcontentloaded' }));
     await page.bringToFront().catch(() => {});
-    return { action: 'newtab', ...(await this.pageState(page)), ...(await this.cmdTabs({})) };
+    const list = await this.cmdTabs({});
+    // `tabs` stays the page count of pageState() — the tab list goes to `tabList`
+    // so the two never collide (that collision used to leak "[object Object]").
+    return { action: 'newtab', ...(await this.pageState(page)), tabList: list.tabs };
   }
 
   async cmdSwitchtab(a: any): Promise<Record<string, unknown>> {
@@ -887,7 +938,9 @@ export class BrowserSession {
     const page = pages[idx - 1];
     if (!page) fail(`no tab #${idx}`, `there are ${pages.length} tabs`);
     await page.bringToFront().catch(() => {});
-    return { action: 'switchtab', ...(await this.pageState(page)) };
+    this.active = page;
+    const list = await this.cmdTabs({});
+    return { action: 'switchtab', ...(await this.pageState(page)), tabList: list.tabs };
   }
 
   async cmdClosetab(a: any): Promise<Record<string, unknown>> {
@@ -895,10 +948,16 @@ export class BrowserSession {
     const idx = num(a.index, pages.length);
     const page = pages[idx - 1];
     if (!page) fail(`no tab #${idx}`, `there are ${pages.length} tabs`);
+    const wasActive = page === this.active;
     await page.close();
-    const remaining = this.context.pages().filter((p: any) => !p.isClosed());
-    if (!remaining.length) await this.context.newPage();
-    return { action: 'closetab', closed: idx, ...(await this.cmdTabs({})) };
+    let remaining = this.context.pages().filter((p: any) => !p.isClosed());
+    if (!remaining.length) {
+      await this.context.newPage();
+      remaining = this.context.pages().filter((p: any) => !p.isClosed());
+    }
+    if (wasActive || !remaining.includes(this.active)) this.active = remaining[remaining.length - 1];
+    const list = await this.cmdTabs({});
+    return { action: 'closetab', closed: idx, ...(await this.pageState(this.active)), tabList: list.tabs };
   }
 
   // ---------------------------------------------------------------- telemetry

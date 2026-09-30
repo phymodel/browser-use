@@ -195,6 +195,27 @@ function renderPageState(r: any): string {
   return bits;
 }
 
+function renderTabs(tabs: any): void {
+  for (const t of Array.isArray(tabs) ? tabs : []) out(`  ${t.active ? '*' : ' '} ${t.index}. ${t.title ?? ''} ${t.url}`);
+}
+
+/** Human-readable form of an `eval` return value (objects stay readable, not "[object Object]"). */
+function renderValue(value: unknown, isUndefined: boolean): string {
+  if (isUndefined) return 'undefined';
+  if (value === null || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'string') {
+    const flat = value.replace(/\n/g, '\\n');
+    return flat.length > 800 ? `${JSON.stringify(flat.slice(0, 800))}… (${flat.length} chars)` : JSON.stringify(flat);
+  }
+  let body: string;
+  try {
+    body = JSON.stringify(value, null, 2) ?? String(value);
+  } catch {
+    body = String(value);
+  }
+  return body.split('\n').join('\n  ');
+}
+
 function renderResult(cmd: string, r: any): void {
   if (globalJson) return jsonOut(r);
   switch (cmd) {
@@ -260,7 +281,26 @@ function renderResult(cmd: string, r: any): void {
       return;
     }
     case 'tabs': {
-      for (const t of r.tabs) out(`  ${t.active ? '*' : ' '} ${t.index}. ${t.title ?? ''} ${t.url}`);
+      renderTabs(r.tabs);
+      return;
+    }
+    case 'newtab':
+    case 'switchtab':
+    case 'closetab': {
+      const head = [`✓ ${r.action}`, r.closed !== undefined && r.closed !== null ? `closed=#${r.closed}` : null]
+        .filter(Boolean)
+        .join(' ');
+      out(`${head}${humanMs(r.ms)}`);
+      const state = renderPageState(r);
+      if (state) out(`  ${state}`);
+      renderTabs(r.tabList);
+      return;
+    }
+    case 'eval': {
+      out(`✓ eval${humanMs(r.ms)}`);
+      out(`  ${renderValue(r.value, Boolean(r.undefined))}`);
+      const state = renderPageState(r);
+      if (state) out(`  ${state}`);
       return;
     }
     case 'window': {

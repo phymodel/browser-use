@@ -70,6 +70,16 @@ function ctl(args: string[], expectOk = true): any {
   return { status: res.status, out: parsed ?? { raw: text }, stderr };
 }
 
+/** Same as ctl() but keeps the human-readable stdout (for CLI rendering checks). */
+function ctlRaw(args: string[]): { status: number | null; stdout: string } {
+  const res = spawnSync(process.execPath, [path.join(P.harnessRoot(), 'src', 'cli.ts'), ...args], {
+    env,
+    encoding: 'utf8',
+    timeout: 180000,
+  });
+  return { status: res.status, stdout: (res.stdout ?? '').trim() };
+}
+
 function refFromSnapshot(pattern: string): string | null {
   const snap = ctl(['snapshot', '--grep', pattern]).out;
   const text: string = snap.text ?? '';
@@ -179,13 +189,45 @@ async function main(): Promise<void> {
     check('eval runs a multi-statement script', ev2.value === 42, JSON.stringify(ev2.value));
     const ev3 = ctl(['eval', '() => document.title.length']).out;
     check('eval calls an arrow function', typeof ev3.value === 'number', JSON.stringify(ev3.value));
+    const humanEval = ctlRaw(['eval', '() => ({ n: 2 })']);
+    check(
+      'eval prints its value in human mode',
+      humanEval.stdout.includes('"n": 2'),
+      JSON.stringify(humanEval.stdout.split('\n')[1] ?? ''),
+    );
 
     // 11. tabs
-    ctl(['newtab', url]);
+    const humanNew = ctlRaw(['newtab', url]);
+    check(
+      'human newtab prints a real tab list (no [object Object])',
+      /✓ newtab/.test(humanNew.stdout) && humanNew.stdout.includes('* 2.') && !humanNew.stdout.includes('[object Object]'),
+      humanNew.stdout.split('\n').slice(0, 3).join(' | '),
+    );
+    ctlRaw(['closetab', '2']);
+    const nt = ctl(['newtab', url]).out;
+    check('newtab reports action=newtab', nt.action === 'newtab', String(nt.action));
+    check(
+      'newtab keeps tab count numeric and the list in tabList',
+      typeof nt.tabs === 'number' && Array.isArray(nt.tabList),
+      `tabs=${nt.tabs} tabList=${nt.tabList?.length}`,
+    );
     const tabs = ctl(['tabs']).out;
     check('newtab added a tab', tabs.count === 2, `${tabs.count} tabs`);
-    ctl(['switchtab', '1']);
-    ctl(['closetab', '2']);
+    check(
+      'the new tab is the active one',
+      tabs.tabs?.find((t: any) => t.active)?.index === 2,
+      JSON.stringify(tabs.tabs?.map((t: any) => [t.index, t.active])),
+    );
+    const sw = ctl(['switchtab', '1']).out;
+    check('switchtab reports action=switchtab', sw.action === 'switchtab', String(sw.action));
+    const tabs1 = ctl(['tabs']).out;
+    check(
+      'switchtab moves the active marker to tab 1',
+      tabs1.tabs?.find((t: any) => t.active)?.index === 1,
+      JSON.stringify(tabs1.tabs?.map((t: any) => [t.index, t.active])),
+    );
+    const ct = ctl(['closetab', '2']).out;
+    check('closetab reports action=closetab', ct.action === 'closetab', String(ct.action));
     const tabs2 = ctl(['tabs']).out;
     check('closetab removed a tab', tabs2.count === 1, `${tabs2.count} tabs`);
 

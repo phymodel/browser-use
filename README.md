@@ -27,7 +27,7 @@ sh scripts/browserctl stop
 - **Zero runtime dependencies** — Node ≥ 22.6 runs the TypeScript directly; `playwright` is resolved from a local
   install, `npm root -g`, or `$BH_PLAYWRIGHT`.
 
-Full docs: [HARNESS.md](./HARNESS.md) · [references/](./references/)
+Full docs: [DOMAIN.md](./DOMAIN.md) · [references/](./references/)
 
 ```
 src/cli.ts       browserctl (RPC client + human/machine output)
@@ -48,7 +48,7 @@ instance and is **not** a scraping-evasion, anti-bot or fingerprint-spoofing too
 
 - **No anti-detection features, by design.** The harness does not spoof fingerprints, solve or
   bypass CAPTCHAs, or circumvent access controls. Such features will not be added — see
-  "边界与非目标 / Non-goals" in [HARNESS.md](./HARNESS.md).
+  "边界与非目标 / Non-goals" in [DOMAIN.md](./DOMAIN.md).
 - **You are responsible for how you use it.** Automated access may be restricted by the terms of
   service of the sites you visit, by `robots.txt`, or by law. Comply with them. Do not use this
   project to access accounts or data you are not authorised to access, to attack or overload a

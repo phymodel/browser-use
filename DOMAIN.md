@@ -40,7 +40,7 @@ description: "Agent browser harness with its own bundled Chromium window (aria-s
 
 ```text
 browser-harness/
-├── HARNESS.md                 # 本文件
+├── DOMAIN.md                 # 本文件
 ├── README.md
 ├── package.json               # 无运行时依赖（playwright 动态解析，可为全局安装）
 ├── src/

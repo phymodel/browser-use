@@ -9,17 +9,17 @@ export const VERSION = '0.1.0';
 const SRC_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 export function packageRoot(): string {
-  return path.resolve(process.env.BH_ROOT || path.join(SRC_DIR, '..'));
+  return path.resolve(process.env.BU_ROOT || path.join(SRC_DIR, '..'));
 }
 
 /** Runtime state: daemon.json, token, logs, screenshots, downloads. */
 export function stateDir(): string {
-  return path.resolve(process.env.BH_STATE_DIR || path.join(packageRoot(), '.state'));
+  return path.resolve(process.env.BU_STATE_DIR || path.join(packageRoot(), '.state'));
 }
 
 /** Dedicated Chromium user-data-dir — the built-in browser never touches the device browser. */
 export function profileDir(): string {
-  return path.resolve(process.env.BH_PROFILE_DIR || path.join(packageRoot(), '.profile', 'chromium'));
+  return path.resolve(process.env.BU_PROFILE_DIR || path.join(packageRoot(), '.profile', 'chromium'));
 }
 
 export function daemonInfoPath(): string {

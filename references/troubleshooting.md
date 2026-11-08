@@ -13,7 +13,7 @@ tail -50 .state/daemon.log
 
 | 错误码 | 含义 | 处理 |
 |--------|------|------|
-| `E_NO_PLAYWRIGHT` | 找不到 playwright 模块 | `npm i -g playwright`，或 `BH_PLAYWRIGHT=/path/to/playwright` |
+| `E_NO_PLAYWRIGHT` | 找不到 playwright 模块 | `npm i -g playwright`，或 `BU_PLAYWRIGHT=/path/to/playwright` |
 | `E_NO_CHROMIUM` | 模块在但没有 `chromium` 导出 | 重装 playwright；确认不是只装了 `playwright-core` |
 | `E_NO_DAEMON` | `.state/daemon.json` 不存在 | `browserctl start <url>` |
 | `E_DAEMON_DOWN` | daemon.json 在但端口不通 | `browserctl stop`（会清掉过期记录）→ `browserctl start` |
@@ -28,7 +28,7 @@ tail -50 .state/daemon.log
 
 ## 常见现象
 
-**窗口没出现。** `BH_HEADLESS=1` 会无窗口运行；`browserctl status` 里 `headless` 会告诉你。
+**窗口没出现。** `BU_HEADLESS=1` 会无窗口运行；`browserctl status` 里 `headless` 会告诉你。
 另外若机器不在图形会话里（纯 SSH），窗口不会画出来，但自动化仍可用。
 
 **点了没反应 / click 超时。** 元素可能被遮挡或还没稳定。错误信息里会写"当前匹配 N 个元素"：
@@ -50,4 +50,4 @@ tail -50 .state/daemon.log
 浏览器内核在全局缓存（`~/Library/Caches/ms-playwright`，macOS），可用 `playwright uninstall --all` 清掉 ——
 注意那是所有 Playwright 项目共享的缓存。
 
-**CI 里跑。** `BH_HEADLESS=1 BH_STATE_DIR=$(mktemp -d)/state BH_PROFILE_DIR=$(mktemp -d)/profile sh scripts/smoke.sh --headless`。
+**CI 里跑。** `BU_HEADLESS=1 BU_STATE_DIR=$(mktemp -d)/state BU_PROFILE_DIR=$(mktemp -d)/profile sh scripts/smoke.sh --headless`。

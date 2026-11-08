@@ -1,9 +1,9 @@
 ---
-name: browser-harness
+name: browser-use
 description: "Browser-automation domain package with its own bundled Chromium window (aria-snapshot perception, [ref=eN] driven actions, local daemon + browserctl CLI). Use for web browsing, page interaction, form filling, scraping and screenshot verification without touching the device browser."
 ---
 
-# browser-harness Domain v0.1
+# browser-use Domain v0.1
 
 一个**自带浏览器窗口**的智能体浏览器领域包（Domain）：内置 Chromium（独立 profile，不碰设备浏览器、不需要任何系统权限、不需要装扩展），
 感知层**以无障碍树为主、截图按需**，动作层用**稳定引用 `[ref=eN]`** 驱动，控制面是一个本地守护进程 + 一条命令 `browserctl`。
@@ -12,7 +12,7 @@ description: "Browser-automation domain package with its own bundled Chromium wi
         browserctl <cmd>  (CLI, 由 agent 用 run_shell 调用)
               │  POST 127.0.0.1:<port>/rpc   (带 x-bh-token, 仅监听回环)
               ▼
-        daemon (browser-harness/src/daemon.ts, 常驻)
+        daemon (browser-use/src/daemon.ts, 常驻)
               │  Playwright launchPersistentContext
               ▼
        内置 Chromium 窗口  ── 专用 user-data-dir: <root>/.profile/chromium
@@ -39,7 +39,7 @@ description: "Browser-automation domain package with its own bundled Chromium wi
 ## 目录与状态布局
 
 ```text
-browser-harness/
+browser-use/
 ├── DOMAIN.md                 # 本文件
 ├── README.md
 ├── package.json               # 无运行时依赖（playwright 动态解析，可为全局安装）
@@ -47,7 +47,7 @@ browser-harness/
 │   ├── cli.ts                 # browserctl：参数解析 + RPC 客户端 + 人类可读渲染
 │   ├── daemon.ts              # 常驻进程：窗口生命周期 + HTTP JSON-RPC + 令牌鉴权
 │   ├── session.ts             # 全部命令实现（快照/查找/动作/标签/遥测/窗口）
-│   ├── pw.ts                  # playwright 解析（本地 → npm root -g → 常见全局路径 / BH_PLAYWRIGHT）
+│   ├── pw.ts                  # playwright 解析（本地 → npm root -g → 常见全局路径 / BU_PLAYWRIGHT）
 │   ├── paths.ts               # 路径与 fs 小工具（根部、state、profile、原子写）
 │   └── log.ts                 # stderr + .state/daemon.log
 ├── scripts/                   # 包入口（run_shell 直接调）
@@ -70,24 +70,24 @@ browser-harness/
 
 | 变量 | 作用 | 默认 |
 |------|------|------|
-| `BH_ROOT` | 包根目录覆盖 | 由 `src/` 位置推导 |
-| `BH_STATE_DIR` | 运行时状态目录 | `<root>/.state` |
-| `BH_PROFILE_DIR` | 内置浏览器 user-data-dir | `<root>/.profile/chromium` |
-| `BH_PORT` / `BH_HOST` | 守护进程监听（占用时自动 +1…+20） | `8737` / `127.0.0.1` |
-| `BH_TOKEN` | RPC 令牌（默认每次启动随机生成，写在 `daemon.json`） | 随机 |
-| `BH_NO_AUTH` | `1` = 关闭令牌校验（仅本机调试） | 关 |
-| `BH_PLAYWRIGHT` | 指定 playwright 安装目录/入口 | 自动解析 |
-| `BH_HEADLESS` | `1` = 无窗口（CI 用） | 关（有窗口） |
-| `BH_WINDOW_SIZE` / `BH_WINDOW_POSITION` | 窗口尺寸 / 位置，如 `1400x900`、`22+33` | `1400x900` |
-| `BH_EXTRA_ARGS` | 追加 Chromium 启动参数（空格分隔） | 空 |
-| `BH_TIMEOUT_MS` / `BH_NAV_TIMEOUT_MS` | 动作 / 导航超时 | `15000` / `45000` |
-| `BH_MAX_LINES` / `BH_MAX_TEXT` / `BH_MAX_JSON` | 快照行数 / 正文 / eval 返回上限 | `1500` / `20000` / `40000` |
-| `BH_RING_MAX` | 日志/请求环形缓冲条数 | `400` |
-| `BH_IDLE_TIMEOUT_MS` | 空闲自动关闭守护进程（0 = 常驻） | `0` |
-| `BH_DIALOG_ACTION` | 弹窗策略 `dismiss` / `accept` | `dismiss` |
-| `BH_LOG_ALL_REQUESTS` | `1` = 连图片/字体/脚本也记进请求环 | 否 |
-| `BH_IGNORE_HTTPS_ERRORS` | `1` = 忽略 TLS 错误 | 否 |
-| `BH_DEBUG` | `1` = RPC 错误里带 stack | 否 |
+| `BU_ROOT` | 包根目录覆盖 | 由 `src/` 位置推导 |
+| `BU_STATE_DIR` | 运行时状态目录 | `<root>/.state` |
+| `BU_PROFILE_DIR` | 内置浏览器 user-data-dir | `<root>/.profile/chromium` |
+| `BU_PORT` / `BU_HOST` | 守护进程监听（占用时自动 +1…+20） | `8737` / `127.0.0.1` |
+| `BU_TOKEN` | RPC 令牌（默认每次启动随机生成，写在 `daemon.json`） | 随机 |
+| `BU_NO_AUTH` | `1` = 关闭令牌校验（仅本机调试） | 关 |
+| `BU_PLAYWRIGHT` | 指定 playwright 安装目录/入口 | 自动解析 |
+| `BU_HEADLESS` | `1` = 无窗口（CI 用） | 关（有窗口） |
+| `BU_WINDOW_SIZE` / `BU_WINDOW_POSITION` | 窗口尺寸 / 位置，如 `1400x900`、`22+33` | `1400x900` |
+| `BU_EXTRA_ARGS` | 追加 Chromium 启动参数（空格分隔） | 空 |
+| `BU_TIMEOUT_MS` / `BU_NAV_TIMEOUT_MS` | 动作 / 导航超时 | `15000` / `45000` |
+| `BU_MAX_LINES` / `BU_MAX_TEXT` / `BU_MAX_JSON` | 快照行数 / 正文 / eval 返回上限 | `1500` / `20000` / `40000` |
+| `BU_RING_MAX` | 日志/请求环形缓冲条数 | `400` |
+| `BU_IDLE_TIMEOUT_MS` | 空闲自动关闭守护进程（0 = 常驻） | `0` |
+| `BU_DIALOG_ACTION` | 弹窗策略 `dismiss` / `accept` | `dismiss` |
+| `BU_LOG_ALL_REQUESTS` | `1` = 连图片/字体/脚本也记进请求环 | 否 |
+| `BU_IGNORE_HTTPS_ERRORS` | `1` = 忽略 TLS 错误 | 否 |
+| `BU_DEBUG` | `1` = RPC 错误里带 stack | 否 |
 
 ## 命令索引（CLI ↔ 内部 RPC）
 
@@ -107,17 +107,17 @@ browser-harness/
 ## 快速开始
 
 ```bash
-export BH=/path/to/browser-harness
+export BU=/path/to/browser-use
 
-sh "$BH/scripts/setup.sh"                 # 自检；缺 playwright / Chromium 会给出修复命令
-sh "$BH/scripts/smoke.sh"                 # 28 项隔离自测（临时 state + 临时 profile + 独立端口）
+sh "$BU/scripts/setup.sh"                 # 自检；缺 playwright / Chromium 会给出修复命令
+sh "$BU/scripts/smoke.sh"                 # 28 项隔离自测（临时 state + 临时 profile + 独立端口）
 
-sh "$BH/scripts/browserctl" start https://example.com     # 打开内置窗口
-sh "$BH/scripts/browserctl" snapshot                      # 无障碍树 + refs ← 主感知调用
-sh "$BH/scripts/browserctl" type e12 "hello" --submit      # 按 ref 输入并回车
-sh "$BH/scripts/browserctl" logs --errors                  # 控制台 / 页面错误
-sh "$BH/scripts/browserctl" screenshot --full              # 落盘 PNG（人工核验）
-sh "$BH/scripts/browserctl" stop
+sh "$BU/scripts/browserctl" start https://example.com     # 打开内置窗口
+sh "$BU/scripts/browserctl" snapshot                      # 无障碍树 + refs ← 主感知调用
+sh "$BU/scripts/browserctl" type e12 "hello" --submit      # 按 ref 输入并回车
+sh "$BU/scripts/browserctl" logs --errors                  # 控制台 / 页面错误
+sh "$BU/scripts/browserctl" screenshot --full              # 落盘 PNG（人工核验）
+sh "$BU/scripts/browserctl" stop
 ```
 
 实测输出（真实站点）：
@@ -147,11 +147,11 @@ $ browserctl type e23 "Playwright (software)" --submit
 5. 结果校验优先用低成本通道：`text`（正文）、`logs --errors`（前端报错）、`requests --failed`（接口失败）；
    需要人眼确认时再 `screenshot`（模型看不到像素）。
 6. `ref` 报 `E_STALE_REF` ⇒ 立即重新 `snapshot`，不要复用旧 ref。
-7. 收尾 `browserctl stop`（或设 `BH_IDLE_TIMEOUT_MS` 让它自己退场）。
+7. 收尾 `browserctl stop`（或设 `BU_IDLE_TIMEOUT_MS` 让它自己退场）。
 
 ## 自测与验证
 
-`scripts/smoke.sh` 在**隔离环境**（临时 `BH_STATE_DIR` / `BH_PROFILE_DIR`、独立端口）跑全链路断言，覆盖：
+`scripts/smoke.sh` 在**隔离环境**（临时 `BU_STATE_DIR` / `BU_PROFILE_DIR`、独立端口）跑全链路断言，覆盖：
 启动与窗口、a11y 快照与 refs、`find`、ref 输入/点击/勾选/下拉、**iframe 内引用（`f1e2`）**、
 旧 ref 失败关闭、截图落盘与尺寸、控制台与网络遥测、`eval` 三种写法、标签页增删切、窗口 bounds、停止。
 
@@ -165,7 +165,7 @@ $ browserctl type e23 "Playwright (software)" --submit
 - **不修改设备浏览器**：不装扩展、不改系统设置、不动用户 profile；卸载本包即彻底消失（`.state/`、`.profile/`、全局浏览器缓存可选删除）。
 - **截图不喂模型**：默认只落盘。若你的客户端支持读图，可自行把 `.state/shots/*.png` 交给模型。
 - **下载与上传**：下载落到 `.state/downloads/`；`upload` 只接受真实存在的本地路径。
-- **协议**：本地回环 + 随机令牌；`daemon.json` 权限 0600。不要把端口暴露到公网（`BH_HOST` 默认 `127.0.0.1`）。
+- **协议**：本地回环 + 随机令牌；`daemon.json` 权限 0600。不要把端口暴露到公网（`BU_HOST` 默认 `127.0.0.1`）。
 - **版本**：`node >= 22.6`（直接跑 TypeScript，无构建步骤）、`playwright >= 1.49`（需要 AI 版 aria snapshot 与 `aria-ref` 引擎）。
 
 ## 免责声明与使用边界

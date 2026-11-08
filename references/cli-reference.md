@@ -21,7 +21,7 @@
 browserctl start https://example.com
 # ✓ built-in browser window ready
 #   pid 52903  port 8737  1 tab(s)
-#   profile /Users/me/browser-harness/.profile/chromium
+#   profile /Users/me/browser-use/.profile/chromium
 ```
 
 ## 页面与感知
@@ -101,7 +101,7 @@ browserctl newtab http://localhost:5173/
 | 命令 | 参数 | 说明 |
 |------|------|------|
 | `logs` | `--limit=N`、`--kind=console\|pageerror\|dialog\|download`、`--level=error\|warn\|info`、`--errors`、`--clear` | 环形缓冲（默认 400 条）。`--errors` = error/warn/pageerror |
-| `requests` | `--limit=N`、`--failed`、`--clear` | 默认只记 document/xhr/fetch 与所有 4xx/5xx；`BH_LOG_ALL_REQUESTS=1` 记全部 |
+| `requests` | `--limit=N`、`--failed`、`--clear` | 默认只记 document/xhr/fetch 与所有 4xx/5xx；`BU_LOG_ALL_REQUESTS=1` 记全部 |
 | `downloads` | | `.state/downloads/` 里的文件与大小 |
 
 ## 窗口

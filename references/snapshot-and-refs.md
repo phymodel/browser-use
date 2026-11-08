@@ -41,7 +41,7 @@
 |------|------|
 | `--grep=TEXT` | 只保留包含该文本的行**及其祖先链**（用于大页面快速定位） |
 | `--depth=N` | 限制树深 |
-| `--max-lines=N` | 硬上限（默认 `BH_MAX_LINES=1500`），超出会标注 `truncated=yes` |
+| `--max-lines=N` | 硬上限（默认 `BU_MAX_LINES=1500`），超出会标注 `truncated=yes` |
 | `--boxes` | 在行尾附加 `[box=x,y,w,h]`（需要坐标时用） |
 | `--json` | 额外返回 `slots`（结构化 ref/role/name/text/depth）与 `json`（原始 JSON 树） |
 

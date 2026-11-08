@@ -8,13 +8,13 @@ import os from 'node:os';
 import path from 'node:path';
 import * as P from '../src/paths.ts';
 
-const PORT = Number(process.env.BH_SMOKE_PORT || 8799);
+const PORT = Number(process.env.BU_SMOKE_PORT || 8799);
 const ROOT = path.join(os.tmpdir(), `bh-smoke-${process.pid}`);
 const HEADLESS = process.argv.includes('--headless');
 const env = {
   ...process.env,
-  BH_STATE_DIR: path.join(ROOT, 'state'),
-  BH_PROFILE_DIR: path.join(ROOT, 'profile'),
+  BU_STATE_DIR: path.join(ROOT, 'state'),
+  BU_PROFILE_DIR: path.join(ROOT, 'profile'),
 };
 
 const FIXTURE = `<!doctype html><html><head><meta charset="utf-8"><title>Smoke Fixture</title></head><body>
@@ -101,7 +101,7 @@ async function main(): Promise<void> {
   fs.writeFileSync(fixture, FIXTURE);
   const url = `file://${fixture}`;
 
-  console.log(`smoke: state=${env.BH_STATE_DIR}`);
+  console.log(`smoke: state=${env.BU_STATE_DIR}`);
   console.log(`smoke: port=${PORT} headless=${HEADLESS}`);
 
   // 0. environment

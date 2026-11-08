@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// browserctl — thin CLI client for the browser-harness daemon.
+// browserctl — thin CLI client for the browser-use daemon.
 // Every command maps to one JSON-RPC call; the daemon owns the browser window.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -158,7 +158,7 @@ async function send(cmd: string, args: any = {}, timeoutMs = 120000): Promise<an
   try {
     res = await fetch(`http://127.0.0.1:${info!.port}/rpc`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-bh-token': info!.token ?? process.env.BH_TOKEN ?? '' },
+      headers: { 'content-type': 'application/json', 'x-bh-token': info!.token ?? process.env.BU_TOKEN ?? '' },
       body: JSON.stringify({ cmd, args }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -171,7 +171,7 @@ async function send(cmd: string, args: any = {}, timeoutMs = 120000): Promise<an
   }
   const data = await res!.json().catch(() => null);
   if (!data) die('the daemon returned a malformed response', `see ${P.daemonLogPath()}`, 'E_BAD_RESPONSE');
-  if (!data.ok) die(data.error?.message ?? 'command failed', data.error?.hint, data.error?.code ?? 'E_BH');
+  if (!data.ok) die(data.error?.message ?? 'command failed', data.error?.hint, data.error?.code ?? 'E_BU');
   return data.result;
 }
 
@@ -349,7 +349,7 @@ async function cmdDoctor(): Promise<void> {
   Object.assign(report, await pw.describePlaywright());
   if (globalJson) return jsonOut(report);
   for (const [k, v] of Object.entries(report)) out(`  ${k.padEnd(20)} ${typeof v === 'object' ? JSON.stringify(v) : v}`);
-  if (!report.playwrightOk) out('\n  fix: npm i -g playwright && playwright install chromium   (or set BH_PLAYWRIGHT)');
+  if (!report.playwrightOk) out('\n  fix: npm i -g playwright && playwright install chromium   (or set BU_PLAYWRIGHT)');
   if (report.playwrightOk && report.chromiumInstalled === false) out('\n  fix: playwright install chromium');
   if (!info) out('\n  daemon not running — start it with: browserctl start');
 }
@@ -413,7 +413,7 @@ async function cmdStart(pos: string[], flags: Flags): Promise<void> {
 
   if (flags.foreground) {
     const daemon = await import('./daemon.ts');
-    const argv = ['--port', String(flagNum(flags, 'port', Number(process.env.BH_PORT || 8737)))];
+    const argv = ['--port', String(flagNum(flags, 'port', Number(process.env.BU_PORT || 8737)))];
     if (url) argv.push('--url', url);
     if (flags.headless) argv.push('--headless');
     if (flags['window-size']) argv.push('--window-size', String(flags['window-size']));

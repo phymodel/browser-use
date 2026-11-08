@@ -6,8 +6,8 @@ import { BrowserSession } from './session.ts';
 import * as P from './paths.ts';
 import { log } from './log.ts';
 
-const DEFAULT_PORT = Number(process.env.BH_PORT || 8737);
-const HOST = process.env.BH_HOST || '127.0.0.1';
+const DEFAULT_PORT = Number(process.env.BU_PORT || 8737);
+const HOST = process.env.BU_HOST || '127.0.0.1';
 
 type DaemonOptions = {
   port?: number;
@@ -84,7 +84,7 @@ export async function main(argv: string[] = []): Promise<void> {
   const opts = parseArgv(argv);
   P.ensureDirs();
 
-  const token = opts.token || process.env.BH_TOKEN || crypto.randomBytes(24).toString('hex');
+  const token = opts.token || process.env.BU_TOKEN || crypto.randomBytes(24).toString('hex');
   const startedAt = Date.now();
   const session = new BrowserSession({
     headless: opts.headless,
@@ -141,7 +141,7 @@ export async function main(argv: string[] = []): Promise<void> {
           return;
         }
         if (req.method === 'POST' && url.pathname === '/rpc') {
-          if (process.env.BH_NO_AUTH !== '1' && !tokenMatches(token, req.headers['x-bh-token'] as string | undefined)) {
+          if (process.env.BU_NO_AUTH !== '1' && !tokenMatches(token, req.headers['x-bh-token'] as string | undefined)) {
             sendJson(res, 401, { ok: false, error: { code: 'E_AUTH', message: 'missing or invalid x-bh-token' } });
             return;
           }
@@ -164,10 +164,10 @@ export async function main(argv: string[] = []): Promise<void> {
             sendJson(res, 200, {
               ok: false,
               error: {
-                code: e?.code ?? 'E_BH',
+                code: e?.code ?? 'E_BU',
                 message: e?.message ?? String(e),
                 hint: e?.hint,
-                stack: process.env.BH_DEBUG ? e?.stack : undefined,
+                stack: process.env.BU_DEBUG ? e?.stack : undefined,
               },
             });
           }

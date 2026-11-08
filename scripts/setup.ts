@@ -58,7 +58,7 @@ async function main(): Promise<void> {
       report = await describePlaywright();
     } else {
       console.error(`  fix: ${cmd}          (or run: sh scripts/setup.sh --install)`);
-      console.error('  or point BH_PLAYWRIGHT at an existing playwright directory');
+      console.error('  or point BU_PLAYWRIGHT at an existing playwright directory');
       process.exit(2);
     }
   }

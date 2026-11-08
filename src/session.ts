@@ -9,19 +9,19 @@ import { log } from './log.ts';
 
 export type BhError = Error & { code?: string; hint?: string };
 
-export function fail(message: string, hint?: string, code = 'E_BH'): never {
+export function fail(message: string, hint?: string, code = 'E_BU'): never {
   const e = new Error(message) as BhError;
   e.code = code;
   e.hint = hint;
   throw e;
 }
 
-const RING_MAX = Number(process.env.BH_RING_MAX || 400);
-const ACTION_TIMEOUT = Number(process.env.BH_TIMEOUT_MS || 15000);
-const NAV_TIMEOUT = Number(process.env.BH_NAV_TIMEOUT_MS || 45000);
-const MAX_LINES = Number(process.env.BH_MAX_LINES || 1500);
-const MAX_TEXT = Number(process.env.BH_MAX_TEXT || 20000);
-const MAX_JSON = Number(process.env.BH_MAX_JSON || 40000);
+const RING_MAX = Number(process.env.BU_RING_MAX || 400);
+const ACTION_TIMEOUT = Number(process.env.BU_TIMEOUT_MS || 15000);
+const NAV_TIMEOUT = Number(process.env.BU_NAV_TIMEOUT_MS || 45000);
+const MAX_LINES = Number(process.env.BU_MAX_LINES || 1500);
+const MAX_TEXT = Number(process.env.BU_MAX_TEXT || 20000);
+const MAX_JSON = Number(process.env.BU_MAX_JSON || 40000);
 
 const SKIP_REQUEST_TYPES = new Set(['image', 'font', 'stylesheet', 'script', 'media', 'other']);
 
@@ -159,7 +159,7 @@ export class BrowserSession {
   requests: any[] = [];
   downloads: any[] = [];
   headless = false;
-  windowSize = process.env.BH_WINDOW_SIZE || '1400x900';
+  windowSize = process.env.BU_WINDOW_SIZE || '1400x900';
   idleTimeoutMs = 0;
   idleTimer: any = null;
   closing = false;
@@ -169,9 +169,9 @@ export class BrowserSession {
   private active: any = null;
 
   constructor(opts: SessionOptions = {}) {
-    this.headless = opts.headless ?? flag('BH_HEADLESS');
+    this.headless = opts.headless ?? flag('BU_HEADLESS');
     if (opts.windowSize) this.windowSize = opts.windowSize;
-    this.idleTimeoutMs = opts.idleTimeoutMs ?? num(process.env.BH_IDLE_TIMEOUT_MS, 0);
+    this.idleTimeoutMs = opts.idleTimeoutMs ?? num(process.env.BU_IDLE_TIMEOUT_MS, 0);
   }
 
   // ---------------------------------------------------------------- lifecycle
@@ -186,10 +186,10 @@ export class BrowserSession {
       '--disable-background-timer-throttling',
       '--disable-features=Translate,MediaRouter,OptimizationHints',
     ];
-    if (process.env.BH_EXTRA_ARGS) args.push(...process.env.BH_EXTRA_ARGS.split(' ').filter(Boolean));
+    if (process.env.BU_EXTRA_ARGS) args.push(...process.env.BU_EXTRA_ARGS.split(' ').filter(Boolean));
     if (!this.headless) {
       args.push(`--window-size=${this.windowSize.replace('x', ',')}`);
-      if (process.env.BH_WINDOW_POSITION) args.push(`--window-position=${process.env.BH_WINDOW_POSITION.replace('+', ',')}`);
+      if (process.env.BU_WINDOW_POSITION) args.push(`--window-position=${process.env.BU_WINDOW_POSITION.replace('+', ',')}`);
     }
 
     // A dedicated user-data-dir => a truly built-in browser: nothing of the
@@ -200,7 +200,7 @@ export class BrowserSession {
       args,
       acceptDownloads: true,
       downloadsPath: P.downloadsDir(),
-      ignoreHTTPSErrors: flag('BH_IGNORE_HTTPS_ERRORS'),
+      ignoreHTTPSErrors: flag('BU_IGNORE_HTTPS_ERRORS'),
       timeout: 60000,
     });
     this.context.setDefaultTimeout(ACTION_TIMEOUT);
@@ -272,7 +272,7 @@ export class BrowserSession {
       });
     });
     page.on('dialog', async (dialog: any) => {
-      const policy = (process.env.BH_DIALOG_ACTION || 'dismiss').toLowerCase();
+      const policy = (process.env.BU_DIALOG_ACTION || 'dismiss').toLowerCase();
       this.push(this.logs, {
         t: Date.now(),
         kind: 'dialog',
@@ -317,7 +317,7 @@ export class BrowserSession {
     page.on('response', (res: any) => {
       const type = res.request().resourceType();
       const status = res.status();
-      if (SKIP_REQUEST_TYPES.has(type) && status < 400 && !flag('BH_LOG_ALL_REQUESTS')) return;
+      if (SKIP_REQUEST_TYPES.has(type) && status < 400 && !flag('BU_LOG_ALL_REQUESTS')) return;
       this.push(this.requests, {
         t: Date.now(),
         ok: status < 400,

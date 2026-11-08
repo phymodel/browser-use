@@ -1,4 +1,4 @@
-# browser-harness
+# browser-use
 
 A **self-contained browser-automation domain package with its own Chromium window** — no permission over the device browser,
 no extension, no shared profile. Perception is accessibility-tree first (`[ref=eN]` handles), screenshots are
@@ -25,7 +25,7 @@ sh scripts/browserctl stop
   silently clicking something else.
 - **Auditable** — console logs, page errors, dialogs, network requests, downloads and screenshots all land in `.state/`.
 - **Zero runtime dependencies** — Node ≥ 22.6 runs the TypeScript directly; `playwright` is resolved from a local
-  install, `npm root -g`, or `$BH_PLAYWRIGHT`.
+  install, `npm root -g`, or `$BU_PLAYWRIGHT`.
 
 Full docs: [DOMAIN.md](./DOMAIN.md) · [references/](./references/)
 
@@ -43,7 +43,7 @@ MIT — see [LICENSE](./LICENSE).
 
 ## Acceptable use & disclaimer
 
-browser-harness is a **general-purpose browser-automation domain package**. It drives its own Chromium
+browser-use is a **general-purpose browser-automation domain package**. It drives its own Chromium
 instance and is **not** a scraping-evasion, anti-bot or fingerprint-spoofing tool.
 
 - **No anti-detection features, by design.** The package does not spoof fingerprints, solve or

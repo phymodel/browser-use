@@ -25,13 +25,13 @@ POST /rpc   (x-bh-token: <token>) → {ok:true, result:{…}}
 body: {"cmd":"click","args":{"target":"e8"}}
 ```
 
-- 仅监听 `127.0.0.1`（可用 `BH_HOST` 改，但不建议）。
+- 仅监听 `127.0.0.1`（可用 `BU_HOST` 改，但不建议）。
 - 令牌默认每次启动用 `crypto.randomBytes(24)` 生成，写在 `.state/daemon.json`（权限 `0600`）；
-  比较用 `crypto.timingSafeEqual`。`BH_NO_AUTH=1` 可关闭（仅本机调试）。
+  比较用 `crypto.timingSafeEqual`。`BU_NO_AUTH=1` 可关闭（仅本机调试）。
 - 端口默认 `8737`，被占用时依次 `+1 … +20`；真实端口写在 `daemon.json`，CLI 通过 `/health` 的 `pid` 校验
   "这个端口上的确实是我启动的那个 daemon"（避免连到别人的进程）。
 - 请求体上限 4MB；`shutdown` 会先回包再退出（CLI 不会看到连接被掐断）。
-- 停止方式：`browserctl stop`（RPC `shutdown`）、`SIGTERM/SIGINT/SIGHUP`、`BH_IDLE_TIMEOUT_MS` 空闲超时、
+- 停止方式：`browserctl stop`（RPC `shutdown`）、`SIGTERM/SIGINT/SIGHUP`、`BU_IDLE_TIMEOUT_MS` 空闲超时、
   或未捕获异常（会先尝试关窗口再退出）。退出时删除 `daemon.json`，所以 `status` 能准确区分"没运行"和"崩了"。
 
 ## 感知/动作实现
@@ -46,11 +46,11 @@ body: {"cmd":"click","args":{"target":"e8"}}
 
 ## 遥测环形缓冲
 
-- `logs`：`console`（含 level）、`pageerror`、`dialog`（策略由 `BH_DIALOG_ACTION` 决定，默认 dismiss 并记录）、
+- `logs`：`console`（含 level）、`pageerror`、`dialog`（策略由 `BU_DIALOG_ACTION` 决定，默认 dismiss 并记录）、
   `download`（落到 `.state/downloads/`）。
 - `requests`：默认记录 document/xhr/fetch 与所有 ≥400 的响应，跳过图片/字体/样式/脚本成功项；
-  `BH_LOG_ALL_REQUESTS=1` 记录全部。
-- 容量 `BH_RING_MAX`（默认 400）条，超出丢最旧。
+  `BU_LOG_ALL_REQUESTS=1` 记录全部。
+- 容量 `BU_RING_MAX`（默认 400）条，超出丢最旧。
 
 ## 与"控制设备浏览器"方案的区别
 

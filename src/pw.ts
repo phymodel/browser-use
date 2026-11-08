@@ -1,5 +1,5 @@
 // Resolve `playwright` without forcing a local node_modules:
-//   1. $BH_PLAYWRIGHT (dir or entry file)
+//   1. $BU_PLAYWRIGHT (dir or entry file)
 //   2. local development install (`npm i playwright` inside the package)
 //   3. global npm roots (npm root -g, then common Homebrew/system paths)
 import { execFileSync } from 'node:child_process';
@@ -45,9 +45,9 @@ function globalRoots(): string[] {
 
 function candidates(): string[] {
   const list: string[] = [];
-  if (process.env.BH_PLAYWRIGHT) list.push(process.env.BH_PLAYWRIGHT);
-  const local = path.join(process.env.BH_ROOT || '', 'node_modules', 'playwright');
-  if (process.env.BH_ROOT) list.push(local);
+  if (process.env.BU_PLAYWRIGHT) list.push(process.env.BU_PLAYWRIGHT);
+  const local = path.join(process.env.BU_ROOT || '', 'node_modules', 'playwright');
+  if (process.env.BU_ROOT) list.push(local);
   for (const root of globalRoots()) list.push(path.join(root, 'playwright'));
   return list;
 }
@@ -55,7 +55,7 @@ function candidates(): string[] {
 const SETUP_HINT =
   'playwright not found. Install it once:\n' +
   '  npm i -g playwright && playwright install chromium\n' +
-  'or point BH_PLAYWRIGHT at an existing install dir.';
+  'or point BU_PLAYWRIGHT at an existing install dir.';
 
 export async function getPlaywright(): Promise<any> {
   if (moduleCache) return moduleCache;

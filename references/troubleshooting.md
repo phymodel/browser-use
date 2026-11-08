@@ -46,7 +46,7 @@ tail -50 .state/daemon.log
 
 **想彻底重置浏览器状态。** `browserctl stop && rm -rf .profile/chromium && browserctl start`（会丢掉登录态）。
 
-**想彻底卸载。** 删掉 harness 目录即可；`.state/`、`.profile/` 随目录消失。
+**想彻底卸载。** 删掉本包目录即可；`.state/`、`.profile/` 随目录消失。
 浏览器内核在全局缓存（`~/Library/Caches/ms-playwright`，macOS），可用 `playwright uninstall --all` 清掉 ——
 注意那是所有 Playwright 项目共享的缓存。
 

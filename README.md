@@ -1,6 +1,6 @@
 # browser-harness
 
-A **self-contained browser harness with its own Chromium window** — no permission over the device browser,
+A **self-contained browser-automation domain package with its own Chromium window** — no permission over the device browser,
 no extension, no shared profile. Perception is accessibility-tree first (`[ref=eN]` handles), screenshots are
 on demand and only for human verification. Control surface: a resident local daemon + one CLI (`browserctl`).
 
@@ -16,7 +16,7 @@ sh scripts/browserctl screenshot --full           # PNG on disk, for humans
 sh scripts/browserctl stop
 ```
 
-- **Built-in, not device** — the harness launches and owns its own Chromium (dedicated `user-data-dir` in
+- **Built-in, not device** — the package launches and owns its own Chromium (dedicated `user-data-dir` in
   `.profile/chromium`). Nothing of the device's browser, extensions, settings or logins is touched, and no OS
   automation permission is needed. Cost: one-time Chromium build in the shared Playwright cache.
 - **Ref-based, not pixel-based** — the agent reads a compact accessibility tree (`- button "提交" [ref=e8]`) and acts
@@ -43,10 +43,10 @@ MIT — see [LICENSE](./LICENSE).
 
 ## Acceptable use & disclaimer
 
-browser-harness is a **general-purpose browser automation harness**. It drives its own Chromium
+browser-harness is a **general-purpose browser-automation domain package**. It drives its own Chromium
 instance and is **not** a scraping-evasion, anti-bot or fingerprint-spoofing tool.
 
-- **No anti-detection features, by design.** The harness does not spoof fingerprints, solve or
+- **No anti-detection features, by design.** The package does not spoof fingerprints, solve or
   bypass CAPTCHAs, or circumvent access controls. Such features will not be added — see
   "边界与非目标 / Non-goals" in [DOMAIN.md](./DOMAIN.md).
 - **You are responsible for how you use it.** Automated access may be restricted by the terms of

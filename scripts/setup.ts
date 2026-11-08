@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// setup — verify the environment and install the Chromium build this harness
+// setup — verify the environment and install the Chromium build this package
 // drives. Zero-dependency: uses whatever `playwright` already exists.
 import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -19,7 +19,7 @@ function nodeOk(): { ok: boolean; version: string; why?: string } {
 }
 
 function findPlaywrightCli(): string | null {
-  const local = path.join(P.harnessRoot(), 'node_modules', 'playwright', 'cli.js');
+  const local = path.join(P.packageRoot(), 'node_modules', 'playwright', 'cli.js');
   if (fs.existsSync(local)) return local;
   try {
     const globalRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim();
@@ -37,7 +37,7 @@ function findPlaywrightCli(): string | null {
 
 async function main(): Promise<void> {
   const node = nodeOk();
-  console.log(`harness root : ${P.harnessRoot()}`);
+  console.log(`package root : ${P.packageRoot()}`);
   console.log(`state dir    : ${P.stateDir()}`);
   console.log(`profile dir  : ${P.profileDir()}`);
   console.log(`node         : ${node.version}`);

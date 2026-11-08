@@ -1,11 +1,11 @@
 ---
 name: browser-harness
-description: "Agent browser harness with its own bundled Chromium window (aria-snapshot perception, [ref=eN] driven actions, local daemon + browserctl CLI). Use for web browsing, page interaction, form filling, scraping and screenshot verification without touching the device browser."
+description: "Browser-automation domain package with its own bundled Chromium window (aria-snapshot perception, [ref=eN] driven actions, local daemon + browserctl CLI). Use for web browsing, page interaction, form filling, scraping and screenshot verification without touching the device browser."
 ---
 
-# Browser Harness v0.1
+# browser-harness Domain v0.1
 
-一个**自带浏览器窗口**的智能体浏览器 harness：内置 Chromium（独立 profile，不碰设备浏览器、不需要任何系统权限、不需要装扩展），
+一个**自带浏览器窗口**的智能体浏览器领域包（Domain）：内置 Chromium（独立 profile，不碰设备浏览器、不需要任何系统权限、不需要装扩展），
 感知层**以无障碍树为主、截图按需**，动作层用**稳定引用 `[ref=eN]`** 驱动，控制面是一个本地守护进程 + 一条命令 `browserctl`。
 
 ```text
@@ -24,7 +24,7 @@ description: "Agent browser harness with its own bundled Chromium window (aria-s
 
 ## 核心原则
 
-> **内置 ≠ 控制设备浏览器。** 内置窗口跑的是 harness 自己管理的 Chromium 进程 + 自己的 user-data-dir；
+> **内置 ≠ 控制设备浏览器。** 内置窗口跑的是本包自己管理的 Chromium 进程 + 自己的 user-data-dir；
 > 不读用户 Chrome 的 profile、不需要「连接我的 Chrome」扩展、不需要任何自动化/辅助功能授权。
 > 代价是首次需要一次性的浏览器内核下载（进入 Playwright 全局缓存，所有 Playwright 项目共享）。
 
@@ -50,7 +50,7 @@ browser-harness/
 │   ├── pw.ts                  # playwright 解析（本地 → npm root -g → 常见全局路径 / BH_PLAYWRIGHT）
 │   ├── paths.ts               # 路径与 fs 小工具（根部、state、profile、原子写）
 │   └── log.ts                 # stderr + .state/daemon.log
-├── scripts/                   # harness 入口（run_shell 直接调）
+├── scripts/                   # 包入口（run_shell 直接调）
 │   ├── browserctl             # → node src/cli.ts
 │   ├── daemon                 # → node src/daemon.ts（前台调试）
 │   ├── setup.sh / setup.ts    # 环境自检 + 补装 Chromium
@@ -70,7 +70,7 @@ browser-harness/
 
 | 变量 | 作用 | 默认 |
 |------|------|------|
-| `BH_ROOT` | harness 根目录覆盖 | 由 `src/` 位置推导 |
+| `BH_ROOT` | 包根目录覆盖 | 由 `src/` 位置推导 |
 | `BH_STATE_DIR` | 运行时状态目录 | `<root>/.state` |
 | `BH_PROFILE_DIR` | 内置浏览器 user-data-dir | `<root>/.profile/chromium` |
 | `BH_PORT` / `BH_HOST` | 守护进程监听（占用时自动 +1…+20） | `8737` / `127.0.0.1` |
@@ -161,8 +161,8 @@ $ browserctl type e23 "Playwright (software)" --submit
 
 ## 边界与非目标
 
-- **不做反爬/指纹对抗**：这是自动化 harness，不是爬虫对抗工具；遇到验证码/风控请在窗口里人工过一手。
-- **不修改设备浏览器**：不装扩展、不改系统设置、不动用户 profile；卸载 harness 即彻底消失（`.state/`、`.profile/`、全局浏览器缓存可选删除）。
+- **不做反爬/指纹对抗**：这是自动化领域包，不是爬虫对抗工具；遇到验证码/风控请在窗口里人工过一手。
+- **不修改设备浏览器**：不装扩展、不改系统设置、不动用户 profile；卸载本包即彻底消失（`.state/`、`.profile/`、全局浏览器缓存可选删除）。
 - **截图不喂模型**：默认只落盘。若你的客户端支持读图，可自行把 `.state/shots/*.png` 交给模型。
 - **下载与上传**：下载落到 `.state/downloads/`；`upload` 只接受真实存在的本地路径。
 - **协议**：本地回环 + 随机令牌；`daemon.json` 权限 0600。不要把端口暴露到公网（`BH_HOST` 默认 `127.0.0.1`）。
@@ -170,9 +170,9 @@ $ browserctl type e23 "Playwright (software)" --submit
 
 ## 免责声明与使用边界
 
-- 本项目是**通用浏览器自动化 harness**，**不属于**爬虫对抗、反爬绕过或指纹伪装工具；
+- 本项目是**通用浏览器自动化领域包**，**不属于**爬虫对抗、反爬绕过或指纹伪装工具；
   不接受任何要求加入指纹伪装、验证码破解、绕过访问控制的功能或 PR。
-- **不做反爬/指纹对抗**（见上文「边界与非目标」）：遇到验证码/风控请在窗口里人工过一手，harness 不代劳。
+- **不做反爬/指纹对抗**（见上文「边界与非目标」）：遇到验证码/风控请在窗口里人工过一手，本包不代劳。
 - 自动化访问可能受目标网站服务条款、`robots.txt` 及法律法规约束，**使用者须自行遵守**；
   不得用于访问未获授权的账号或数据、不得用于攻击或压测他人服务、不得用于任何违法用途。
 - 本软件按「原样」提供，不附带任何明示或默示担保，作者不对使用本软件产生的任何损失承担责任（详见 [LICENSE](./LICENSE)）。

@@ -19,7 +19,7 @@
 ## RPC 协议
 
 ```text
-GET  /health                     → {ok, pid, port, version, harnessRoot, profile, headless, pages, uptimeMs}
+GET  /health                     → {ok, pid, port, version, packageRoot, profile, headless, pages, uptimeMs}
 POST /rpc   (x-bh-token: <token>) → {ok:true, result:{…}}
                                     {ok:false, error:{code, message, hint?}}
 body: {"cmd":"click","args":{"target":"e8"}}
@@ -54,14 +54,14 @@ body: {"cmd":"click","args":{"target":"e8"}}
 
 ## 与"控制设备浏览器"方案的区别
 
-| | 本 harness | 连接真实 Chrome（扩展 / CDP） |
+| | 本包 | 连接真实 Chrome（扩展 / CDP） |
 |---|---|---|
-| 浏览器 | harness 自己拉起并管理的内置 Chromium | 设备上用户正在用的 Chrome |
+| 浏览器 | 本包自己拉起并管理的内置 Chromium | 设备上用户正在用的 Chrome |
 | profile | 专用 `user-data-dir`，与用户数据隔离 | 用户真实 profile（cookie/登录态） |
 | 权限 | 不需要任何授权 | 需要装扩展 / 开调试端口 / 系统自动化授权 |
 | 登录态 | 空 profile，需要时在窗口里人工登一次，之后复用 | 直接复用现有登录态 |
 | 可移植 | 换机器即用（一次内核下载） | 依赖用户机器上装了 Chrome 且已登录 |
 | 风险 | 不碰用户数据 | 可能误操作用户真实账号 |
 
-需要"复用我已登录的浏览器"时，本 harness 的等价做法是：在**内置窗口**里人工登录一次，
+需要"复用我已登录的浏览器"时，本包的等价做法是：在**内置窗口**里人工登录一次，
 登录态就存在 `.profile/chromium/` 里，后续 agent 调用直接复用——仍然不需要任何系统权限。

@@ -47,7 +47,7 @@ function check(name: string, ok: boolean, detail = ''): void {
 }
 
 function ctl(args: string[], expectOk = true): any {
-  const res = spawnSync(process.execPath, [path.join(P.harnessRoot(), 'src', 'cli.ts'), ...args, '--json'], {
+  const res = spawnSync(process.execPath, [path.join(P.packageRoot(), 'src', 'cli.ts'), ...args, '--json'], {
     env,
     encoding: 'utf8',
     timeout: 180000,
@@ -72,7 +72,7 @@ function ctl(args: string[], expectOk = true): any {
 
 /** Same as ctl() but keeps the human-readable stdout (for CLI rendering checks). */
 function ctlRaw(args: string[]): { status: number | null; stdout: string } {
-  const res = spawnSync(process.execPath, [path.join(P.harnessRoot(), 'src', 'cli.ts'), ...args], {
+  const res = spawnSync(process.execPath, [path.join(P.packageRoot(), 'src', 'cli.ts'), ...args], {
     env,
     encoding: 'utf8',
     timeout: 180000,
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
     fail++;
     results.push(`  ✗ aborted: ${(e as Error).message}`);
   } finally {
-    const stopped = spawnSync(process.execPath, [path.join(P.harnessRoot(), 'src', 'cli.ts'), 'stop', '--json'], { env, encoding: 'utf8', timeout: 60000 });
+    const stopped = spawnSync(process.execPath, [path.join(P.packageRoot(), 'src', 'cli.ts'), 'stop', '--json'], { env, encoding: 'utf8', timeout: 60000 });
     check('daemon stopped', !/browser window closed|stopped/.test(stopped.stdout ?? '') || (stopped.status ?? 1) === 0, (stopped.stdout ?? '').trim().split('\n')[0]);
   }
 

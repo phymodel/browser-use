@@ -1,6 +1,6 @@
 // Resolve `playwright` without forcing a local node_modules:
 //   1. $BH_PLAYWRIGHT (dir or entry file)
-//   2. local development install (`npm i playwright` inside the harness)
+//   2. local development install (`npm i playwright` inside the package)
 //   3. global npm roots (npm root -g, then common Homebrew/system paths)
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';

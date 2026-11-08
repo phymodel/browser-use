@@ -336,7 +336,7 @@ async function cmdDoctor(): Promise<void> {
   const report: Record<string, unknown> = {
     node: process.version,
     platform: `${process.platform}/${process.arch}`,
-    harnessRoot: P.harnessRoot(),
+    packageRoot: P.packageRoot(),
     stateDir: P.stateDir(),
     profileDir: P.profileDir(),
     playwrightReady: false,
@@ -357,7 +357,7 @@ async function cmdDoctor(): Promise<void> {
 async function cmdProfile(): Promise<void> {
   const info = readInfo();
   const entries = [
-    { key: 'harnessRoot', value: P.harnessRoot() },
+    { key: 'packageRoot', value: P.packageRoot() },
     { key: 'profile', value: info?.profile ?? P.profileDir() },
     { key: 'stateDir', value: info?.stateDir ?? P.stateDir() },
     { key: 'screenshots', value: P.shotsDir() },
@@ -422,7 +422,7 @@ async function cmdStart(pos: string[], flags: Flags): Promise<void> {
     return;
   }
 
-  const argv = [path.join(P.harnessRoot(), 'src', 'daemon.ts')];
+  const argv = [path.join(P.packageRoot(), 'src', 'daemon.ts')];
   if (flags.port) argv.push('--port', String(flagNum(flags, 'port')));
   if (url) argv.push('--url', url);
   if (flags.headless) argv.push('--headless');
@@ -430,7 +430,7 @@ async function cmdStart(pos: string[], flags: Flags): Promise<void> {
   if (flags['idle-timeout']) argv.push('--idle-timeout', String(flags['idle-timeout']));
 
   P.ensureDirs();
-  const child = spawn(process.execPath, argv, { cwd: P.harnessRoot(), detached: true, stdio: 'ignore' });
+  const child = spawn(process.execPath, argv, { cwd: P.packageRoot(), detached: true, stdio: 'ignore' });
   child.unref();
 
   const timeoutMs = Number(flags['start-timeout'] ?? 90000);

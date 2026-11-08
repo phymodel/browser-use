@@ -481,7 +481,7 @@ export class BrowserSession {
       uptimeMs: Date.now() - this.startedAt,
       headless: this.headless,
       windowSize: this.windowSize,
-      harnessRoot: P.harnessRoot(),
+      packageRoot: P.packageRoot(),
       profile: P.profileDir(),
       stateDir: P.stateDir(),
       downloadsDir: P.downloadsDir(),

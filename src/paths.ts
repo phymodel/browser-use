@@ -1,4 +1,4 @@
-// Path + small fs helpers. Everything is relative to the harness root so the
+// Path + small fs helpers. Everything is relative to the package root so the
 // package stays portable (Studio syncs it / clones it anywhere).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,18 +8,18 @@ export const VERSION = '0.1.0';
 
 const SRC_DIR = path.dirname(fileURLToPath(import.meta.url));
 
-export function harnessRoot(): string {
+export function packageRoot(): string {
   return path.resolve(process.env.BH_ROOT || path.join(SRC_DIR, '..'));
 }
 
 /** Runtime state: daemon.json, token, logs, screenshots, downloads. */
 export function stateDir(): string {
-  return path.resolve(process.env.BH_STATE_DIR || path.join(harnessRoot(), '.state'));
+  return path.resolve(process.env.BH_STATE_DIR || path.join(packageRoot(), '.state'));
 }
 
 /** Dedicated Chromium user-data-dir — the built-in browser never touches the device browser. */
 export function profileDir(): string {
-  return path.resolve(process.env.BH_PROFILE_DIR || path.join(harnessRoot(), '.profile', 'chromium'));
+  return path.resolve(process.env.BH_PROFILE_DIR || path.join(packageRoot(), '.profile', 'chromium'));
 }
 
 export function daemonInfoPath(): string {
@@ -75,7 +75,7 @@ export function appendLine(file: string, line: string): void {
     ensureDir(path.dirname(file));
     fs.appendFileSync(file, `${line}\n`);
   } catch {
-    /* logging must never break the harness */
+    /* logging must never break the package */
   }
 }
 
